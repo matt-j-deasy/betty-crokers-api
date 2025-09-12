@@ -1,32 +1,21 @@
 package database
 
 import (
-	"embed"
+	"fmt"
 	"log/slog"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/pressly/goose/v3"
+	"gorm.io/gorm"
 )
 
-//go:embed migrations/*.sql
-var embeddedMigrations embed.FS
+// RunMigrations applies database migrations using GORM.
+func RunMigrations(db *gorm.DB) error {
+	slog.Info("Starting database migrations...")
 
-func RunMigrations(db *pgxpool.Pool) error {
-	// Run migrations
-	slog.Info("Running migrations...")
-	goose.SetBaseFS(embeddedMigrations)
-
-	if err := goose.SetDialect("postgres"); err != nil {
-		slog.Error("Goose dialogue failed", "err", err)
-		return err
+	err := db.AutoMigrate()
+	if err != nil {
+		return fmt.Errorf("database migration failed: %w", err)
 	}
 
-	dbConn := stdlib.OpenDBFromPool(db)
-	if err := goose.Up(dbConn, "migrations"); err != nil {
-		slog.Error("Goose up failed", "err", err)
-		return err
-	}
-
+	slog.Info("✅ GORM database migration completed successfully")
 	return nil
 }

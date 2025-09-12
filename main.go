@@ -9,8 +9,11 @@ import (
 
 	"github.com/matt-j-deasy/betty-crokers-api/config"
 	"github.com/matt-j-deasy/betty-crokers-api/database"
+	"github.com/matt-j-deasy/betty-crokers-api/handlers"
 	"github.com/matt-j-deasy/betty-crokers-api/middleware"
+	"github.com/matt-j-deasy/betty-crokers-api/repositories"
 	"github.com/matt-j-deasy/betty-crokers-api/server"
+	"github.com/matt-j-deasy/betty-crokers-api/services"
 )
 
 func main() {
@@ -24,23 +27,44 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Initialize database
-	dbPool, err := database.InitializeDatabase(cfg)
+	// Initialize database (returns GORM DB)
+	db, err := database.InitializeDatabase(cfg)
 	if err != nil {
 		slog.Error("Failed to initialize database", "error", err)
 		os.Exit(1)
 	}
-	defer dbPool.Close()
+	defer database.CloseDatabase()
 
 	// Run migrations
-	err = database.RunMigrations(dbPool)
+	err = database.RunMigrations(db)
 	if err != nil {
 		slog.Error("problem running migrations", "err", err)
 		os.Exit(1)
 	}
 
+	// Initialize repositories
+	repos, err := repositories.InitializeRepositories(db)
+	if err != nil {
+		slog.Error("Failed to initialize repositories", "err", err)
+		os.Exit(1)
+	}
+
+	// Initialize services
+	services, err := services.InitializeServices(repos, cfg)
+	if err != nil {
+		slog.Error("Failed to initialize services", "err", err)
+		os.Exit(1)
+	}
+
+	// Initialize handlers
+	handlers, err := handlers.InitializeHandlers(services, cfg)
+	if err != nil {
+		slog.Error("Failed to initialize handlers", "err", err)
+		os.Exit(1)
+	}
+
 	// Create server
-	s := server.CreateServer(cfg, dbPool)
+	s := server.CreateServer(cfg, db, handlers)
 
 	// Start server
 	if cfg.RunMode == "local" {

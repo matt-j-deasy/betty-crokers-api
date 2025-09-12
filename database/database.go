@@ -1,59 +1,54 @@
 package database
 
 import (
-	"context"
 	"fmt"
-	"log/slog"
-	"time"
+	"net/url"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"log/slog"
+
 	"github.com/matt-j-deasy/betty-crokers-api/config"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-// InitializeDatabase initializes a connection pool to the database
-func InitializeDatabase(cfg config.Environment) (*pgxpool.Pool, error) {
-	// Logging database connection attempt
-	slog.Info("Connecting to database...")
+var GormDB *gorm.DB
 
-	// Database connection configuration
-	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
+// InitializeDatabase sets up the GORM database connection
+func InitializeDatabase(cfg config.Environment) (*gorm.DB, error) {
+	encodedPassword := url.QueryEscape(cfg.DBPassword)
 
-	dbConfig, err := pgxpool.ParseConfig(dbURL)
+	sslMode := "disable"
+	if cfg.RunMode == "prod" || cfg.RunMode == "staging" {
+		sslMode = "require"
+		slog.Info("Using SSL for database connection in production mode")
+	}
+
+	dsn := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		cfg.DBUser, encodedPassword, cfg.DBHost, cfg.DBPort, cfg.DBName, sslMode,
+	)
+
+	// Connect GORM
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 	if err != nil {
-		slog.Error("Failed to parse database URL", "error", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	// Set connection pool options
-	dbConfig.MaxConns = 10 // Example value; adjust based on application needs
-	dbConfig.MinConns = 2  // Keep some connections ready
-	dbConfig.HealthCheckPeriod = 1 * time.Minute
-	dbConfig.MaxConnLifetime = 1 * time.Hour
-	dbConfig.MaxConnIdleTime = 30 * time.Minute
+	GormDB = db
+	slog.Info("✅ GORM connected to database")
+	return db, nil
+}
 
-	// Try connecting to the database
-	maxRetries := 5
-	retryDelay := 2 * time.Second
-	var pool *pgxpool.Pool
-
-	for i := 0; i < maxRetries; i++ {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		pool, err = pgxpool.NewWithConfig(ctx, dbConfig)
-		if err == nil {
-			// Verify connection with a health check
-			if err = pool.Ping(ctx); err == nil {
-				slog.Info("Successfully connected to the database.")
-				return pool, nil
-			}
-		}
-
-		slog.Warn("Unable to connect to database, retrying...", "attempt", i+1, "error", err)
-		time.Sleep(retryDelay)
+// CloseDatabase gracefully closes the database connection
+func CloseDatabase() {
+	sqlDB, err := GormDB.DB()
+	if err != nil {
+		slog.Error("Failed to get database connection", "error", err)
+		return
 	}
-
-	// All retries failed
-	slog.Error("Max retry attempts reached. Unable to connect to the database.", "error", err)
-	return nil, err
+	sqlDB.Close()
+	slog.Info("✅ Database connection closed")
 }
