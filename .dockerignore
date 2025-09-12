@@ -1,0 +1,27 @@
+# Binaries
+/out
+/bin
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Modules/build cache
+vendor/
+**/.cache/
+**/.DS_Store
+**/*.log
+coverage/
+dist/
+node_modules/
+
+# VCS & IDE
+.git
+.gitignore
+.gitattributes
+.idea
+.vscode
+
+# Local env
+.env
+.env.*

@@ -12,7 +12,7 @@ func SetupLogger(w io.Writer) *slog.Logger {
 	})
 	l := slog.New(h)
 	l = l.With("app", slog.GroupValue(
-		slog.String("name", "TS-API"),
+		slog.String("name", "BC-API"),
 	))
 	return l
 }

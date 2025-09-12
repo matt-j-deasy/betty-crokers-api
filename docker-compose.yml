@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # These are what your app reads:
+      LOCAL_PORT: ${LOCAL_PORT:-8080}
+      RUN_MODE: ${RUN_MODE:-local}
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-app}
+      FRONT_END_URL: ${FRONT_END_URL:-http://localhost:5173}
+    ports:
+      - "${LOCAL_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # Your health route is /api/v1/health
+      test: ["CMD-SHELL", "wget -qO- http://localhost:${LOCAL_PORT:-8080}/api/v1/health >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 2s
+      retries: 12
+      start_period: 15s
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-app}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-app} -h localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  db_data:
