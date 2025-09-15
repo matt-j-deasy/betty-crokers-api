@@ -18,14 +18,21 @@ func SetupRouter(handlers *handlers.HandlersCollection, cfg config.Environment) 
 	apiV1 := router.Group("/api/v1")
 
 	// Register all routes
-	registerRoutes(apiV1, handlers)
+	registerRoutes(apiV1, cfg, handlers)
 
 	return router
 }
 
-// registerRoutes groups all the route registrations in one place.
-func registerRoutes(apiV1 *gin.RouterGroup, handlers *handlers.HandlersCollection) {
-
-	// Public routes
+func registerRoutes(apiV1 *gin.RouterGroup, cfg config.Environment, handlers *handlers.HandlersCollection) {
+	// Public
 	apiV1.GET("/health", handlers.HealthCheckHandler.HealthCheck)
+
+	// Auth
+	RegisterAuthRoutes(apiV1, handlers.AuthHandler)
+
+	// Protected routes
+	protected := apiV1.Group("/")
+	protected.Use(middleware.AuthMiddleware(cfg))
+
+	RegisterUserRoutes(protected, handlers.UserHandler)
 }

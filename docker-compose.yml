@@ -15,15 +15,17 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DB_NAME: ${DB_NAME:-app}
       FRONT_END_URL: ${FRONT_END_URL:-http://localhost:5173}
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me}
+      JWT_ISSUER: ${JWT_ISSUER:-betty-crokers-api}
+      JWT_EXP_MINUTES: ${JWT_EXP_MINUTES:-60}
     ports:
       - "${LOCAL_PORT:-8080}:8080"
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
-      # Your health route is /api/v1/health
       test: ["CMD-SHELL", "wget -qO- http://localhost:${LOCAL_PORT:-8080}/api/v1/health >/dev/null 2>&1 || exit 1"]
-      interval: 10s
+      interval: 60s
       timeout: 2s
       retries: 12
       start_period: 15s

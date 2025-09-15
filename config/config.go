@@ -9,14 +9,17 @@ import (
 )
 
 type Environment struct {
-	LocalPort   int    `env:"LOCAL_PORT" validate:"required"`
-	DBHost      string `env:"DB_HOST" validate:"required"`
-	DBPort      string `env:"DB_PORT" validate:"required"`
-	DBUser      string `env:"DB_USER" validate:"required"`
-	DBPassword  string `env:"DB_PASSWORD" validate:"required"`
-	DBName      string `env:"DB_NAME" validate:"required"`
-	RunMode     string `env:"RUN_MODE" validate:"required,oneof=local production"`
-	FrontEndURL string `env:"FRONT_END_URL" validate:"required,url"`
+	LocalPort     int    `env:"LOCAL_PORT" validate:"required"`
+	DBHost        string `env:"DB_HOST" validate:"required"`
+	DBPort        string `env:"DB_PORT" validate:"required"`
+	DBUser        string `env:"DB_USER" validate:"required"`
+	DBPassword    string `env:"DB_PASSWORD" validate:"required"`
+	DBName        string `env:"DB_NAME" validate:"required"`
+	RunMode       string `env:"RUN_MODE" validate:"required,oneof=local production"`
+	FrontEndURL   string `env:"FRONT_END_URL" validate:"required,url"`
+	JWTSecret     string `env:"JWT_SECRET" validate:"required"`
+	JWTIssuer     string `env:"JWT_ISSUER" validate:"required"`
+	JWTExpMinutes int    `env:"JWT_EXP_MINUTES" validate:"required"`
 }
 
 func LoadConfig() (Environment, error) {
@@ -51,6 +54,13 @@ func LoadConfig() (Environment, error) {
 	if cfg.LocalPort == 0 {
 		slog.Info("LOCAL_PORT not set, defaulting to 8080")
 		cfg.LocalPort = 8080
+	}
+
+	if cfg.JWTIssuer == "" {
+		cfg.JWTIssuer = "betty-crokers-api"
+	}
+	if cfg.JWTExpMinutes == 0 {
+		cfg.JWTExpMinutes = 60
 	}
 
 	return cfg, nil
