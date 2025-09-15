@@ -5,17 +5,17 @@ import (
 	"log/slog"
 
 	"gorm.io/gorm"
+
+	"github.com/matt-j-deasy/betty-crokers-api/models"
 )
 
-// RunMigrations applies database migrations using GORM.
 func RunMigrations(db *gorm.DB) error {
 	slog.Info("Starting database migrations...")
-
-	err := db.AutoMigrate()
-	if err != nil {
+	if err := db.AutoMigrate(
+		&models.User{},
+	); err != nil {
 		return fmt.Errorf("database migration failed: %w", err)
 	}
-
 	slog.Info("✅ GORM database migration completed successfully")
 	return nil
 }

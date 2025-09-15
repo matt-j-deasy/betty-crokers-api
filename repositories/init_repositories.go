@@ -6,8 +6,11 @@ import (
 
 func InitializeRepositories(db *gorm.DB) (*RepositoriesCollection, error) {
 
-	return &RepositoriesCollection{}, nil
+	return &RepositoriesCollection{
+		UserRepo: NewUserRepository(db),
+	}, nil
 }
 
 type RepositoriesCollection struct {
+	UserRepo *UserRepository
 }

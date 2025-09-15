@@ -9,8 +9,13 @@ func InitializeServices(
 	repos *repositories.RepositoriesCollection,
 	cfg config.Environment,
 ) (*ServicesCollection, error) {
-	return &ServicesCollection{}, nil
+	return &ServicesCollection{
+		AuthService: NewAuthService(repos, cfg),
+		UserService: NewUserService(repos),
+	}, nil
 }
 
 type ServicesCollection struct {
+	AuthService *AuthService
+	UserService *UserService
 }
