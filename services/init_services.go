@@ -10,12 +10,14 @@ func InitializeServices(
 	cfg config.Environment,
 ) (*ServicesCollection, error) {
 	return &ServicesCollection{
-		AuthService: NewAuthService(repos, cfg),
-		UserService: NewUserService(repos),
+		AuthService:   NewAuthService(repos, cfg),
+		UserService:   NewUserService(repos),
+		PlayerService: NewPlayerService(repos),
 	}, nil
 }
 
 type ServicesCollection struct {
-	AuthService *AuthService
-	UserService *UserService
+	AuthService   *AuthService
+	UserService   *UserService
+	PlayerService *PlayerService
 }
