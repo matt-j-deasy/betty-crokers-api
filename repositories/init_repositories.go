@@ -7,10 +7,12 @@ import (
 func InitializeRepositories(db *gorm.DB) (*RepositoriesCollection, error) {
 
 	return &RepositoriesCollection{
-		UserRepo: NewUserRepository(db),
+		UserRepo:   NewUserRepository(db),
+		PlayerRepo: NewPlayerRepository(db),
 	}, nil
 }
 
 type RepositoriesCollection struct {
-	UserRepo *UserRepository
+	UserRepo   *UserRepository
+	PlayerRepo *PlayerRepository
 }

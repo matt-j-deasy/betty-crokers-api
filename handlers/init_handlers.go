@@ -11,6 +11,7 @@ func InitializeHandlers(services *services.ServicesCollection, cfg config.Enviro
 		HealthCheckHandler: NewHealthCheckHandler(*services, cfg),
 		AuthHandler:        NewAuthHandler(services),
 		UserHandler:        NewUserHandler(services),
+		PlayerHandler:      NewPlayerHandler(services),
 	}, nil
 }
 
@@ -19,4 +20,5 @@ type HandlersCollection struct {
 	HealthCheckHandler *HealthCheckHandler
 	AuthHandler        *AuthHandler
 	UserHandler        *UserHandler
+	PlayerHandler      *PlayerHandler
 }

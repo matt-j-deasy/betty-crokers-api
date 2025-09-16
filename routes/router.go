@@ -26,6 +26,7 @@ func SetupRouter(handlers *handlers.HandlersCollection, cfg config.Environment) 
 func registerRoutes(apiV1 *gin.RouterGroup, cfg config.Environment, handlers *handlers.HandlersCollection) {
 	// Public
 	apiV1.GET("/health", handlers.HealthCheckHandler.HealthCheck)
+	RegisterPlayerPublicRoutes(apiV1, handlers.PlayerHandler)
 
 	// Auth
 	RegisterAuthRoutes(apiV1, handlers.AuthHandler)
@@ -35,4 +36,5 @@ func registerRoutes(apiV1 *gin.RouterGroup, cfg config.Environment, handlers *ha
 	protected.Use(middleware.AuthMiddleware(cfg))
 
 	RegisterUserRoutes(protected, handlers.UserHandler)
+	RegisterPlayerProtectedRoutes(protected, handlers.PlayerHandler)
 }

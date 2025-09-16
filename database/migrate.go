@@ -13,6 +13,8 @@ func RunMigrations(db *gorm.DB) error {
 	slog.Info("Starting database migrations...")
 	if err := db.AutoMigrate(
 		&models.User{},
+		&models.Player{},
+		&models.PlayerTeamMembership{},
 	); err != nil {
 		return fmt.Errorf("database migration failed: %w", err)
 	}
