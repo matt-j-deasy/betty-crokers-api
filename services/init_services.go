@@ -10,18 +10,22 @@ func InitializeServices(
 	cfg config.Environment,
 ) (*ServicesCollection, error) {
 	return &ServicesCollection{
-		AuthService:   NewAuthService(repos, cfg),
-		UserService:   NewUserService(repos),
-		PlayerService: NewPlayerService(repos),
-		LeagueService: NewLeagueService(repos),
-		SeasonService: NewSeasonService(repos),
+		AuthService:       NewAuthService(repos, cfg),
+		UserService:       NewUserService(repos),
+		PlayerService:     NewPlayerService(repos),
+		LeagueService:     NewLeagueService(repos),
+		SeasonService:     NewSeasonService(repos),
+		TeamService:       NewTeamService(repos),
+		TeamSeasonService: NewTeamSeasonService(repos),
 	}, nil
 }
 
 type ServicesCollection struct {
-	AuthService   *AuthService
-	UserService   *UserService
-	PlayerService *PlayerService
-	LeagueService *LeagueService
-	SeasonService *SeasonService
+	AuthService       *AuthService
+	UserService       *UserService
+	PlayerService     *PlayerService
+	LeagueService     *LeagueService
+	SeasonService     *SeasonService
+	TeamService       *TeamService
+	TeamSeasonService *TeamSeasonService
 }
