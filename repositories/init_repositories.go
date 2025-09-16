@@ -10,6 +10,7 @@ func InitializeRepositories(db *gorm.DB) (*RepositoriesCollection, error) {
 		UserRepo:   NewUserRepository(db),
 		PlayerRepo: NewPlayerRepository(db),
 		LeagueRepo: NewLeagueRepository(db),
+		SeasonRepo: NewSeasonRepository(db),
 	}, nil
 }
 
@@ -17,4 +18,5 @@ type RepositoriesCollection struct {
 	UserRepo   *UserRepository
 	PlayerRepo *PlayerRepository
 	LeagueRepo *LeagueRepository
+	SeasonRepo *SeasonRepository
 }

@@ -28,6 +28,7 @@ func registerRoutes(apiV1 *gin.RouterGroup, cfg config.Environment, handlers *ha
 	apiV1.GET("/health", handlers.HealthCheckHandler.HealthCheck)
 	RegisterPlayerPublicRoutes(apiV1, handlers.PlayerHandler)
 	RegisterLeaguePublicRoutes(apiV1, handlers.LeagueHandler)
+	RegisterSeasonPublicRoutes(apiV1, handlers.SeasonHandler)
 
 	// Auth
 	RegisterAuthRoutes(apiV1, handlers.AuthHandler)
@@ -39,4 +40,5 @@ func registerRoutes(apiV1 *gin.RouterGroup, cfg config.Environment, handlers *ha
 	RegisterUserRoutes(protected, handlers.UserHandler)
 	RegisterPlayerProtectedRoutes(protected, handlers.PlayerHandler)
 	RegisterLeagueProtectedRoutes(protected, handlers.LeagueHandler)
+	RegisterSeasonProtectedRoutes(protected, handlers.SeasonHandler)
 }
