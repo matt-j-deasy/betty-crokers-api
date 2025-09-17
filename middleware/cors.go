@@ -8,8 +8,8 @@ import (
 func CORSMiddleware(cfg config.Environment) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		allowedOrigins := map[string]bool{
-			"http://localhost:5174": true,
-			"http://localhost:5173": true,
+			"http://localhost:3000": true,
+			"http://localhost:3001": true,
 			cfg.FrontEndURL:         true,
 		}
 

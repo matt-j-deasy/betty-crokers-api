@@ -37,7 +37,7 @@ ENV LOCAL_PORT=8080 \
     DB_USER=postgres \
     DB_PASSWORD=postgres \
     DB_NAME=app \
-    FRONT_END_URL=http://localhost:5173
+    FRONT_END_URL=http://localhost:3000
 
 COPY --from=builder /out/server /app/server
 
