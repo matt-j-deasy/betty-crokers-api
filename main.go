@@ -66,16 +66,36 @@ func main() {
 	// Create server
 	s := server.CreateServer(cfg, db, handlers)
 
+	addr := ":" + pickPort(os.Getenv("PORT"), cfg.LocalPort, 8080)
+
 	// Start server
-	if cfg.RunMode == "local" {
-		slog.Info("Starting local execution")
-		err = s.Start(":" + strconv.Itoa(cfg.LocalPort))
-		if err != nil {
-			slog.Error("Failed to start server", "err", err)
-			os.Exit(1)
-		}
-	} else {
-		slog.Info("unknown RUNMODE", "mode", cfg.RunMode)
+	switch cfg.RunMode {
+	case "local":
+		slog.Info("Starting server", "mode", "local", "addr", addr)
+	case "production":
+		slog.Info("Starting server", "mode", "production", "addr", addr)
+	default:
+		slog.Error("unknown RUN_MODE", "mode", cfg.RunMode)
 		os.Exit(1)
 	}
+
+	// Start
+	if err := s.Start(addr); err != nil {
+		slog.Error("Server crashed", "err", err)
+		os.Exit(1)
+	}
+}
+
+// pickPort returns the first non-empty/valid port, as a string without a leading colon.
+func pickPort(portEnv string, localPort int, fallback int) string {
+	if portEnv != "" {
+		// Basic sanity: ensure it's a valid integer > 0
+		if p, err := strconv.Atoi(portEnv); err == nil && p > 0 {
+			return strconv.Itoa(p)
+		}
+	}
+	if localPort > 0 {
+		return strconv.Itoa(localPort)
+	}
+	return strconv.Itoa(fallback)
 }

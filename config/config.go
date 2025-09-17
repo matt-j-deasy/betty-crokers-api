@@ -2,6 +2,7 @@ package config
 
 import (
 	"log/slog"
+	"strconv"
 
 	"github.com/Netflix/go-env"
 	"github.com/go-playground/validator/v10"
@@ -10,6 +11,7 @@ import (
 
 type Environment struct {
 	LocalPort     int    `env:"LOCAL_PORT" validate:"required"`
+	Port          int    `env:"PORT"` // Render sets this
 	DBHost        string `env:"DB_HOST" validate:"required"`
 	DBPort        string `env:"DB_PORT" validate:"required"`
 	DBUser        string `env:"DB_USER" validate:"required"`
@@ -64,4 +66,14 @@ func LoadConfig() (Environment, error) {
 	}
 
 	return cfg, nil
+}
+
+func (e Environment) ListenAddr() string {
+	if e.Port != 0 { // Render/Heroku-style
+		return ":" + strconv.Itoa(e.Port)
+	}
+	if e.LocalPort != 0 {
+		return ":" + strconv.Itoa(e.LocalPort)
+	}
+	return ":8080"
 }
