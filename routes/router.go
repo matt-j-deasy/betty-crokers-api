@@ -34,19 +34,28 @@ func registerRoutes(apiV1 *gin.RouterGroup, cfg config.Environment, handlers *ha
 	RegisterGamePublicRoutes(apiV1, handlers.GameHandler)
 	RegisterGameSidePublicRoutes(apiV1, handlers.GameSideHandler)
 
+	RegisterUserRoutes(apiV1, handlers.UserHandler)
+	RegisterPlayerProtectedRoutes(apiV1, handlers.PlayerHandler)
+	RegisterLeagueProtectedRoutes(apiV1, handlers.LeagueHandler)
+	RegisterSeasonProtectedRoutes(apiV1, handlers.SeasonHandler)
+	RegisterTeamProtectedRoutes(apiV1, handlers.TeamHandler)
+	RegisterTeamSeasonProtectedRoutes(apiV1, handlers.TeamSeasonHandler)
+	RegisterGameProtectedRoutes(apiV1, handlers.GameHandler)
+	RegisterGameSideProtectedRoutes(apiV1, handlers.GameSideHandler)
+
 	// Auth
 	RegisterAuthRoutes(apiV1, handlers.AuthHandler)
 
 	// Protected routes
-	protected := apiV1.Group("/")
-	protected.Use(middleware.AuthMiddleware(cfg))
+	// protected := apiV1.Group("/")
+	// protected.Use(middleware.AuthMiddleware(cfg))
 
-	RegisterUserRoutes(protected, handlers.UserHandler)
-	RegisterPlayerProtectedRoutes(protected, handlers.PlayerHandler)
-	RegisterLeagueProtectedRoutes(protected, handlers.LeagueHandler)
-	RegisterSeasonProtectedRoutes(protected, handlers.SeasonHandler)
-	RegisterTeamProtectedRoutes(protected, handlers.TeamHandler)
-	RegisterTeamSeasonProtectedRoutes(protected, handlers.TeamSeasonHandler)
-	RegisterGameProtectedRoutes(protected, handlers.GameHandler)
-	RegisterGameSideProtectedRoutes(protected, handlers.GameSideHandler)
+	// RegisterUserRoutes(protected, handlers.UserHandler)
+	// RegisterPlayerProtectedRoutes(protected, handlers.PlayerHandler)
+	// RegisterLeagueProtectedRoutes(protected, handlers.LeagueHandler)
+	// RegisterSeasonProtectedRoutes(protected, handlers.SeasonHandler)
+	// RegisterTeamProtectedRoutes(protected, handlers.TeamHandler)
+	// RegisterTeamSeasonProtectedRoutes(protected, handlers.TeamSeasonHandler)
+	// RegisterGameProtectedRoutes(protected, handlers.GameHandler)
+	// RegisterGameSideProtectedRoutes(protected, handlers.GameSideHandler)
 }
