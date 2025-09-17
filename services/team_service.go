@@ -73,13 +73,8 @@ func (s *TeamService) Create(ctx context.Context, in CreateTeamInput) (*models.T
 		return nil, errors.New("playerBId not found")
 	}
 
-	// Canonicalize pair and check uniqueness
+	// Canonicalize pair
 	a, b := canonicalPair(in.PlayerAID, in.PlayerBID)
-	if exists, err := s.repos.TeamRepo.ExistsByPlayers(ctx, a, b); err != nil {
-		return nil, err
-	} else if exists {
-		return nil, errors.New("team for this player pair already exists")
-	}
 
 	t := &models.Team{
 		Name:        name,

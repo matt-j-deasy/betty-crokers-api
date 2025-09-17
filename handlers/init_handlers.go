@@ -16,6 +16,8 @@ func InitializeHandlers(services *services.ServicesCollection, cfg config.Enviro
 		SeasonHandler:      NewSeasonHandler(services),
 		TeamHandler:        NewTeamHandler(services),
 		TeamSeasonHandler:  NewTeamSeasonHandler(services),
+		GameHandler:        NewGameHandler(services),
+		GameSideHandler:    NewGameSideHandler(services),
 	}, nil
 }
 
@@ -29,4 +31,6 @@ type HandlersCollection struct {
 	SeasonHandler      *SeasonHandler
 	TeamHandler        *TeamHandler
 	TeamSeasonHandler  *TeamSeasonHandler
+	GameHandler        *GameHandler
+	GameSideHandler    *GameSideHandler
 }

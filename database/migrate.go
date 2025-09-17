@@ -19,6 +19,8 @@ func RunMigrations(db *gorm.DB) error {
 		&models.Season{},
 		&models.Team{},
 		&models.TeamSeason{},
+		&models.Game{},
+		&models.GameSide{},
 	); err != nil {
 		return fmt.Errorf("database migration failed: %w", err)
 	}

@@ -17,6 +17,8 @@ func InitializeServices(
 		SeasonService:     NewSeasonService(repos),
 		TeamService:       NewTeamService(repos),
 		TeamSeasonService: NewTeamSeasonService(repos),
+		GameService:       NewGameService(repos),
+		GameSideService:   NewGameSideService(repos),
 	}, nil
 }
 
@@ -28,4 +30,6 @@ type ServicesCollection struct {
 	SeasonService     *SeasonService
 	TeamService       *TeamService
 	TeamSeasonService *TeamSeasonService
+	GameService       *GameService
+	GameSideService   *GameSideService
 }

@@ -92,30 +92,35 @@ func (r *TeamRepository) List(ctx context.Context, f ListTeamsFilter) ([]models.
 		total int64
 	)
 
-	q := r.db.WithContext(ctx).Model(&models.Team{}).Where("teams.deleted_at IS NULL")
-
-	if s := strings.TrimSpace(f.Search); s != "" {
-		ilike := "%" + strings.ToLower(s) + "%"
-		q = q.Where("LOWER(teams.name) LIKE ?", ilike)
-	}
-
-	if f.PlayerID != nil && *f.PlayerID > 0 {
-		q = q.Where("(teams.player_a_id = ? OR teams.player_b_id = ?)", *f.PlayerID, *f.PlayerID)
-	}
-
-	// Filter by membership in a season (via join)
-	if f.SeasonID != nil && *f.SeasonID > 0 {
-		q = q.Joins(`JOIN team_seasons ts ON ts.team_id = teams.id AND ts.season_id = ? AND ts.deleted_at IS NULL`, *f.SeasonID)
-		if f.OnlyActive != nil {
-			q = q.Where("ts.is_active = ?", *f.OnlyActive)
+	// base filter builder
+	base := r.db.WithContext(ctx).Model(&models.Team{}).Where("teams.deleted_at IS NULL")
+	apply := func(q *gorm.DB) *gorm.DB {
+		if s := strings.TrimSpace(f.Search); s != "" {
+			ilike := "%" + strings.ToLower(s) + "%"
+			q = q.Where("LOWER(teams.name) LIKE ?", ilike)
 		}
+		if f.PlayerID != nil && *f.PlayerID > 0 {
+			q = q.Where("(teams.player_a_id = ? OR teams.player_b_id = ?)", *f.PlayerID, *f.PlayerID)
+		}
+		if f.SeasonID != nil && *f.SeasonID > 0 {
+			q = q.Joins(`JOIN team_seasons ts
+				ON ts.team_id = teams.id
+				AND ts.season_id = ?
+				AND ts.deleted_at IS NULL`, *f.SeasonID)
+			if f.OnlyActive != nil {
+				q = q.Where("ts.is_active = ?", *f.OnlyActive)
+			}
+		}
+		return q
 	}
 
-	// Count distinct team IDs (joins can duplicate rows)
-	if err := q.Distinct("teams.id").Count(&total).Error; err != nil {
+	// total count (distinct ids to de-dupe joins)
+	countQ := apply(base.Session(&gorm.Session{}))
+	if err := countQ.Distinct("teams.id").Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
+	// pagination guards
 	limit := f.Limit
 	if limit <= 0 || limit > 100 {
 		limit = 25
@@ -125,14 +130,18 @@ func (r *TeamRepository) List(ctx context.Context, f ListTeamsFilter) ([]models.
 		offset = 0
 	}
 
-	if err := q.Select("teams.*").
-		Distinct("teams.id").
+	// items query (distinct across all selected columns)
+	itemsQ := apply(base.Session(&gorm.Session{}))
+	if err := itemsQ.
+		Select("teams.*").
+		Distinct(). // <-- no args, so it's DISTINCT on all selected columns
 		Order("teams.id DESC").
 		Limit(limit).
 		Offset(offset).
 		Find(&items).Error; err != nil {
 		return nil, 0, err
 	}
+
 	return items, total, nil
 }
 

@@ -31,6 +31,8 @@ func registerRoutes(apiV1 *gin.RouterGroup, cfg config.Environment, handlers *ha
 	RegisterSeasonPublicRoutes(apiV1, handlers.SeasonHandler)
 	RegisterTeamPublicRoutes(apiV1, handlers.TeamHandler)
 	RegisterTeamSeasonPublicRoutes(apiV1, handlers.TeamSeasonHandler)
+	RegisterGamePublicRoutes(apiV1, handlers.GameHandler)
+	RegisterGameSidePublicRoutes(apiV1, handlers.GameSideHandler)
 
 	// Auth
 	RegisterAuthRoutes(apiV1, handlers.AuthHandler)
@@ -45,4 +47,6 @@ func registerRoutes(apiV1 *gin.RouterGroup, cfg config.Environment, handlers *ha
 	RegisterSeasonProtectedRoutes(protected, handlers.SeasonHandler)
 	RegisterTeamProtectedRoutes(protected, handlers.TeamHandler)
 	RegisterTeamSeasonProtectedRoutes(protected, handlers.TeamSeasonHandler)
+	RegisterGameProtectedRoutes(protected, handlers.GameHandler)
+	RegisterGameSideProtectedRoutes(protected, handlers.GameSideHandler)
 }
