@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"strings"
 	"time"
@@ -219,6 +221,44 @@ func (s *SeasonService) GetStandings(ctx context.Context, seasonID int64) (Seaso
 		return nil, err
 	}
 	return rows, nil
+}
+
+type PlayerStandingDTO struct {
+	PlayerID      int64   `json:"playerId"`
+	Games         int64   `json:"games"`
+	Wins          int64   `json:"wins"`
+	Losses        int64   `json:"losses"`
+	PointsFor     int64   `json:"pointsFor"`
+	PointsAgainst int64   `json:"pointsAgainst"`
+	PointDiff     int64   `json:"pointDiff"`
+	WinPct        float64 `json:"winPct"`
+	Rank          int     `json:"rank"`
+}
+
+func (s *SeasonService) ListPlayerStandings(ctx context.Context, seasonID int64, limit int, cursor *repositories.PlayerStandingsCursor) ([]PlayerStandingDTO, *string, error) {
+	rows, next, err := s.repo.ListPlayerStandings(ctx, repositories.ListPlayerStandingsQuery{
+		SeasonID: seasonID, Limit: limit, Cursor: cursor,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	out := make([]PlayerStandingDTO, 0, len(rows))
+	for i, r := range rows {
+		out = append(out, PlayerStandingDTO{
+			PlayerID: r.PlayerID, Games: r.Games, Wins: r.Wins, Losses: r.Losses,
+			PointsFor: r.PointsFor, PointsAgainst: r.PointsAgainst, PointDiff: r.PointDiff,
+			WinPct: r.WinPct, Rank: i + 1,
+		})
+	}
+
+	var nc *string
+	if next != nil {
+		b, _ := json.Marshal(next)
+		enc := base64.StdEncoding.EncodeToString(b)
+		nc = &enc
+	}
+	return out, nc, nil
 }
 
 // -------- Helpers

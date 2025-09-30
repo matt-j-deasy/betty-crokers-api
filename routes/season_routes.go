@@ -11,6 +11,7 @@ func RegisterSeasonPublicRoutes(rg *gin.RouterGroup, h *handlers.SeasonHandler) 
 	g.GET("", h.List)    // GET /api/v1/seasons?q=&page=&size=&leagueId=
 	g.GET("/:id", h.Get) // GET /api/v1/seasons/:id
 	g.GET("/:id/standings", h.Standings)
+	g.GET("/:id/standings/players", h.ListPlayerStandings)
 }
 
 // Protected Season routes (auth required)

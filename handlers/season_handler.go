@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/matt-j-deasy/betty-crokers-api/repositories"
 	"github.com/matt-j-deasy/betty-crokers-api/services"
 )
 
@@ -149,4 +152,48 @@ func (h *SeasonHandler) Standings(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, rows)
+}
+
+func (h *SeasonHandler) ListPlayerStandings(c *gin.Context) {
+	seasonID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || seasonID <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid season ID"})
+		return
+	}
+
+	limit := 50
+	if s := c.Query("limit"); s != "" {
+		if v, err := strconv.Atoi(s); err == nil {
+			if v < 1 {
+				v = 1
+			}
+			if v > 200 {
+				v = 200
+			}
+			limit = v
+		}
+	}
+
+	var cur *repositories.PlayerStandingsCursor
+	if s := c.Query("cursor"); s != "" {
+		dec, err := base64.StdEncoding.DecodeString(s)
+		if err == nil {
+			var tmp repositories.PlayerStandingsCursor
+			if json.Unmarshal(dec, &tmp) == nil {
+				cur = &tmp
+			}
+		}
+	}
+
+	rows, next, err := h.services.SeasonService.ListPlayerStandings(c.Request.Context(), seasonID, limit, cur)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to compute standings"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"seasonId":    seasonID,
+		"standings":   rows,
+		"next_cursor": next,
+	})
 }
