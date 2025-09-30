@@ -135,3 +135,18 @@ func (h *SeasonHandler) List(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, out)
 }
+
+func (h *SeasonHandler) Standings(c *gin.Context) {
+	seasonID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || seasonID <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid season ID"})
+		return
+	}
+	rows, err := h.services.SeasonService.GetStandings(c, seasonID)
+	if err != nil {
+		// If season missing, your GetByID returns an error → 404
+		c.JSON(http.StatusNotFound, gin.H{"error": "season not found"})
+		return
+	}
+	c.JSON(http.StatusOK, rows)
+}

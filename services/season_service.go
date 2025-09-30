@@ -207,6 +207,20 @@ func (s *SeasonService) List(ctx context.Context, opts ListSeasonsOptions) (*Pag
 	}, nil
 }
 
+type SeasonStandings []repositories.SeasonStandingsRow
+
+func (s *SeasonService) GetStandings(ctx context.Context, seasonID int64) (SeasonStandings, error) {
+	// Optional: check that season exists to return 404 vs empty list
+	if _, err := s.repo.GetByID(ctx, seasonID); err != nil {
+		return nil, err
+	}
+	rows, err := s.repo.GetStandings(ctx, seasonID)
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
 // -------- Helpers
 
 func parseYMD(s string) (time.Time, error) {
