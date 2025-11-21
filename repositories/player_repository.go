@@ -87,3 +87,114 @@ func (r *PlayerRepository) List(ctx context.Context, f ListPlayersFilter) ([]mod
 
 	return items, total, nil
 }
+
+type PlayerDuplicateGameDBRow struct {
+	GameID     int64   `gorm:"column:game_id"`
+	SeasonID   *int64  `gorm:"column:season_id"`
+	MatchType  string  `gorm:"column:match_type"`
+	Status     string  `gorm:"column:status"`
+	WinnerSide *string `gorm:"column:winner_side"`
+
+	Side     string `gorm:"column:side"`
+	Color    string `gorm:"column:color"`
+	RowCount int64  `gorm:"column:row_count"`
+}
+
+func (r *PlayerRepository) ListPlayerDuplicateGames(
+	ctx context.Context,
+	playerID int64,
+) ([]PlayerDuplicateGameDBRow, error) {
+
+	sql := `
+WITH per_player AS (
+
+  -- direct player matchups
+  SELECT
+    gs.player_id AS player_id,
+    g.id         AS game_id,
+    g.season_id  AS season_id,
+    g.match_type AS match_type,
+    g.status     AS status,
+    g.winner_side AS winner_side,
+    gs.side      AS side,
+    gs.color     AS color
+  FROM games g
+  JOIN game_sides gs ON gs.game_id = g.id
+  WHERE g.status = 'completed'
+    AND g.match_type = 'players'
+    AND gs.player_id IS NOT NULL
+
+  UNION ALL
+
+  -- team matchups -> PlayerA
+  SELECT
+    t.player_a_id AS player_id,
+    g.id          AS game_id,
+    g.season_id   AS season_id,
+    g.match_type  AS match_type,
+    g.status      AS status,
+    g.winner_side AS winner_side,
+    gs.side       AS side,
+    gs.color      AS color
+  FROM games g
+  JOIN game_sides gs ON gs.game_id = g.id
+  JOIN teams t       ON t.id = gs.team_id
+  WHERE g.status = 'completed'
+    AND g.match_type = 'teams'
+    AND gs.team_id IS NOT NULL
+
+  UNION ALL
+
+  -- team matchups -> PlayerB
+  SELECT
+    t.player_b_id AS player_id,
+    g.id          AS game_id,
+    g.season_id   AS season_id,
+    g.match_type  AS match_type,
+    g.status      AS status,
+    g.winner_side AS winner_side,
+    gs.side       AS side,
+    gs.color      AS color
+  FROM games g
+  JOIN game_sides gs ON gs.game_id = g.id
+  JOIN teams t       ON t.id = gs.team_id
+  WHERE g.status = 'completed'
+    AND g.match_type = 'teams'
+    AND gs.team_id IS NOT NULL
+),
+
+suspicious AS (
+  SELECT
+    game_id,
+    COUNT(*) AS row_count
+  FROM per_player
+  WHERE player_id = @playerID
+  GROUP BY game_id
+  HAVING COUNT(*) > 1
+)
+
+SELECT
+  p.game_id,
+  p.season_id,
+  p.match_type,
+  p.status,
+  p.winner_side,
+  p.side,
+  p.color,
+  s.row_count
+FROM per_player p
+JOIN suspicious s ON s.game_id = p.game_id
+WHERE p.player_id = @playerID
+ORDER BY p.game_id, p.side, p.color;
+`
+
+	var rows []PlayerDuplicateGameDBRow
+	if err := r.db.WithContext(ctx).
+		Raw(sql, map[string]any{
+			"playerID": playerID,
+		}).
+		Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+	return rows, nil
+}

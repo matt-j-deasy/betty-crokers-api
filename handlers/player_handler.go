@@ -116,3 +116,26 @@ func (h *PlayerHandler) List(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, out)
 }
+
+func (h *PlayerHandler) ListPlayerDuplicateGames(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || id <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid player ID",
+		})
+		return
+	}
+
+	rows, err := h.services.PlayerService.ListPlayerDuplicateGames(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to fetch duplicate games",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"playerId": id,
+		"data":     rows,
+	})
+}

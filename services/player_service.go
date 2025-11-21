@@ -120,3 +120,40 @@ func (s *PlayerService) List(ctx context.Context, opts ListPlayersOptions) (*Pag
 		Size:  size,
 	}, nil
 }
+
+type PlayerDuplicateGameRow struct {
+	GameID     int64   `json:"gameId"`
+	SeasonID   *int64  `json:"seasonId"`
+	MatchType  string  `json:"matchType"`
+	Status     string  `json:"status"`
+	WinnerSide *string `json:"winnerSide"`
+
+	Side     string `json:"side"`
+	Color    string `json:"color"`
+	RowCount int64  `json:"rowCount"` // number of per-player rows for (player, game)
+}
+
+func (s *PlayerService) ListPlayerDuplicateGames(
+	ctx context.Context,
+	playerID int64,
+) ([]PlayerDuplicateGameRow, error) {
+	rows, err := s.repo.ListPlayerDuplicateGames(ctx, playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]PlayerDuplicateGameRow, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, PlayerDuplicateGameRow{
+			GameID:     r.GameID,
+			SeasonID:   r.SeasonID,
+			MatchType:  r.MatchType,
+			Status:     r.Status,
+			WinnerSide: r.WinnerSide,
+			Side:       r.Side,
+			Color:      r.Color,
+			RowCount:   r.RowCount,
+		})
+	}
+	return out, nil
+}

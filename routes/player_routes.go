@@ -18,4 +18,5 @@ func RegisterPlayerProtectedRoutes(rg *gin.RouterGroup, h *handlers.PlayerHandle
 	g.POST("", h.Create)
 	g.PUT("/:id", h.Update)
 	g.DELETE("/:id", h.Delete)
+	g.GET("/:id/duplicate-games", h.ListPlayerDuplicateGames)
 }
