@@ -159,7 +159,7 @@ func (h *TeamSeasonHandler) ListSeasonsForTeam(c *gin.Context) {
 
 // GET /api/v1/seasons/:seasonId/teams?onlyActive=
 func (h *TeamSeasonHandler) ListTeamsForSeason(c *gin.Context) {
-	seasonID, ok := parseIDParam(c.Param("id"))
+	seasonID, ok := parseIDParam(c.Param("seasonId"))
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid seasonId"})
 		return

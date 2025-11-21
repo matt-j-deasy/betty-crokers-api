@@ -33,6 +33,7 @@ func registerRoutes(apiV1 *gin.RouterGroup, cfg config.Environment, handlers *ha
 	RegisterTeamSeasonPublicRoutes(apiV1, handlers.TeamSeasonHandler)
 	RegisterGamePublicRoutes(apiV1, handlers.GameHandler)
 	RegisterGameSidePublicRoutes(apiV1, handlers.GameSideHandler)
+	RegisterSeasonStatsPublicRoutes(apiV1, handlers.SeasonStatsHandler)
 
 	// Auth
 	RegisterAuthRoutes(apiV1, handlers.AuthHandler)

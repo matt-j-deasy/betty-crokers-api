@@ -11,8 +11,8 @@ func RegisterTeamSeasonPublicRoutes(rg *gin.RouterGroup, h *handlers.TeamSeasonH
 	rg.GET("/team-seasons", h.List) // GET /api/v1/team-seasons?teamId=&seasonId=&onlyActive=&page=&size=
 
 	// Cross lookups (use :id to match existing /teams/:id and /seasons/:id)
-	rg.GET("/teams/:id/seasons", h.ListSeasonsForTeam) // GET /api/v1/teams/:id/seasons?onlyActive=
-	rg.GET("/seasons/:id/teams", h.ListTeamsForSeason) // GET /api/v1/seasons/:id/teams?onlyActive=
+	rg.GET("/teams/:id/seasons", h.ListSeasonsForTeam)       // GET /api/v1/teams/:id/seasons?onlyActive=
+	rg.GET("/seasons/:seasonId/teams", h.ListTeamsForSeason) // GET /api/v1/seasons/:seasonId/teams?onlyActive=
 }
 
 // Protected TeamSeason routes (auth required): link/unlink/toggle

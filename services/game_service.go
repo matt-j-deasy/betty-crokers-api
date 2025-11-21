@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -277,6 +278,7 @@ func (s *GameService) List(ctx context.Context, opts ListGamesOptions) (*PagedGa
 	if size <= 0 || size > 100 {
 		size = 25
 	}
+	slog.Debug("Listing games", "options", opts, "page", page, "size", size)
 	items, total, err := s.repos.GameRepo.List(ctx, repositories.ListGamesFilter{
 		SeasonID:       opts.SeasonID,
 		ExhibitionOnly: opts.ExhibitionOnly,
@@ -293,6 +295,8 @@ func (s *GameService) List(ctx context.Context, opts ListGamesOptions) (*PagedGa
 	if err != nil {
 		return nil, err
 	}
+
+	slog.Info("Listed games", "returned", len(items), "total", total)
 	return &PagedGames{Data: items, Total: total, Page: page, Size: size}, nil
 }
 

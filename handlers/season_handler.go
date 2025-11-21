@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/base64"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -50,7 +51,7 @@ func (h *SeasonHandler) Create(c *gin.Context) {
 }
 
 func (h *SeasonHandler) Get(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	id, err := strconv.ParseInt(c.Param("seasonId"), 10, 64)
 	if err != nil || id <= 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid season ID"})
 		return
@@ -73,7 +74,7 @@ type updateSeasonReq struct {
 }
 
 func (h *SeasonHandler) Update(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	id, err := strconv.ParseInt(c.Param("seasonId"), 10, 64)
 	if err != nil || id <= 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid season ID"})
 		return
@@ -99,15 +100,19 @@ func (h *SeasonHandler) Update(c *gin.Context) {
 }
 
 func (h *SeasonHandler) Delete(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || id <= 0 {
+	id, ok := parseIDParam(c.Param("seasonId"))
+	if !ok {
+		slog.Error("invalid season ID param", "param", c.Param("seasonId"))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid season ID"})
 		return
 	}
 	if err := h.services.SeasonService.Delete(c, id); err != nil {
+		slog.Error("failed to delete season", "seasonID", id, "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete"})
 		return
 	}
+
+	slog.Info("deleted season", "seasonID", id)
 	c.Status(http.StatusNoContent)
 }
 
@@ -140,7 +145,7 @@ func (h *SeasonHandler) List(c *gin.Context) {
 }
 
 func (h *SeasonHandler) Standings(c *gin.Context) {
-	seasonID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	seasonID, err := strconv.ParseInt(c.Param("seasonId"), 10, 64)
 	if err != nil || seasonID <= 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid season ID"})
 		return
@@ -155,7 +160,7 @@ func (h *SeasonHandler) Standings(c *gin.Context) {
 }
 
 func (h *SeasonHandler) ListPlayerStandings(c *gin.Context) {
-	seasonID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	seasonID, err := strconv.ParseInt(c.Param("seasonId"), 10, 64)
 	if err != nil || seasonID <= 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid season ID"})
 		return
