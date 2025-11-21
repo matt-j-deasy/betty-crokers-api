@@ -211,7 +211,7 @@ expanded AS (
 ),
 -- Join each per-player row with their opponent row in the same game to get points_against
 paired AS (
-  SELECT
+  SELECT DISTINCT ON (a.player_id, a.game_id)
     a.player_id,
     a.game_id,
     a.side,
@@ -220,6 +220,7 @@ paired AS (
     a.winner_side
   FROM expanded a
   JOIN expanded b ON b.game_id = a.game_id AND b.side <> a.side
+  ORDER BY a.player_id, a.game_id
 ),
 -- Aggregate per player
 agg AS (
