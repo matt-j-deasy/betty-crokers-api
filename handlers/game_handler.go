@@ -47,6 +47,8 @@ type updateGameReq struct {
 	Location     *string `json:"location"`    // send null to clear
 	Description  *string `json:"description"` // send null to clear
 	Status       *string `json:"status"`      // scheduled|in_progress|canceled|completed
+	SideAColor   *string `json:"sideAColor"`  // "white" | "black" | "natural"
+	SideBColor   *string `json:"sideBColor"`  // "white" | "black" | "natural"
 }
 
 type completeReq struct {
@@ -137,6 +139,18 @@ func (h *GameHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 		return
 	}
+
+	// parse colors (optional)
+	var colorA, colorB *models.DiscColor
+	if req.SideAColor != nil && *req.SideAColor != "" {
+		v := models.DiscColor(strings.ToLower(*req.SideAColor))
+		colorA = &v
+	}
+	if req.SideBColor != nil && *req.SideBColor != "" {
+		v := models.DiscColor(strings.ToLower(*req.SideBColor))
+		colorB = &v
+	}
+
 	out, err := h.services.GameService.Update(c, id, services.UpdateGameInput{
 		SeasonID:     req.SeasonID,
 		TargetPoints: req.TargetPoints,
@@ -145,6 +159,8 @@ func (h *GameHandler) Update(c *gin.Context) {
 		Location:     req.Location,
 		Description:  req.Description,
 		Status:       req.Status,
+		SideAColor:   colorA,
+		SideBColor:   colorB,
 	})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

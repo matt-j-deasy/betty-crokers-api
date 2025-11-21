@@ -160,3 +160,17 @@ func (r *GameRepository) List(ctx context.Context, f ListGamesFilter) ([]models.
 
 	return items, total, nil
 }
+
+func (r *GameRepository) UpdateSideColor(
+	ctx context.Context,
+	gameID int64,
+	side string, // "A" or "B"
+	color models.DiscColor,
+) error {
+	return r.db.WithContext(ctx).
+		Model(&models.GameSide{}).
+		Where("game_id = ? AND side = ?", gameID, side).
+		Updates(map[string]any{
+			"color": color,
+		}).Error
+}

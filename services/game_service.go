@@ -50,6 +50,8 @@ type UpdateGameInput struct {
 	Description  *string `json:"description,omitempty"` // can be null via handler->fields map if you want clearing
 	Status       *string `json:"status,omitempty"`      // "scheduled"|"in_progress"|"completed"|"canceled"
 	// Note: winner is computed; do not set directly
+	SideAColor *models.DiscColor `json:"sideAColor,omitempty"` // "white" | "black" | "natural"
+	SideBColor *models.DiscColor `json:"sideBColor,omitempty"` // "white" | "black" | "natural"
 }
 
 type ListGamesOptions struct {
@@ -223,10 +225,12 @@ func (s *GameService) Update(ctx context.Context, id int64, in UpdateGameInput) 
 	}
 
 	if in.Location != nil {
-		fields["location"] = in.Location // nil clears
+		// nil clears
+		fields["location"] = in.Location
 	}
 	if in.Description != nil {
-		fields["description"] = in.Description // nil clears
+		// nil clears
+		fields["description"] = in.Description
 	}
 
 	if in.Status != nil {
@@ -259,10 +263,30 @@ func (s *GameService) Update(ctx context.Context, id int64, in UpdateGameInput) 
 		}
 	}
 
+	// First update the game row (if there are any game fields)
+	var updated *models.Game
 	if len(fields) == 0 {
-		return cur, nil
+		updated = cur
+	} else {
+		updated, err = s.repos.GameRepo.UpdateFields(ctx, id, fields)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return s.repos.GameRepo.UpdateFields(ctx, id, fields)
+
+	// Then update side colors on game_sides, if requested
+	if in.SideAColor != nil {
+		if err := s.repos.GameRepo.UpdateSideColor(ctx, id, "A", *in.SideAColor); err != nil {
+			return nil, err
+		}
+	}
+	if in.SideBColor != nil {
+		if err := s.repos.GameRepo.UpdateSideColor(ctx, id, "B", *in.SideBColor); err != nil {
+			return nil, err
+		}
+	}
+
+	return updated, nil
 }
 
 func (s *GameService) Delete(ctx context.Context, id int64) error {
